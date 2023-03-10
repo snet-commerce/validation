@@ -48,7 +48,7 @@ func (v violation) MarshalJSON() ([]byte, error) {
 
 // String implements fmt.Stringer interface
 func (v violation) String() string {
-	args := make([]string, len(v.args))
+	args := make([]string, 0, len(v.args))
 	for key, val := range v.args {
 		args = append(args, fmt.Sprintf("%s = %s", key, val))
 	}
