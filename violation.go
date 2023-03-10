@@ -3,34 +3,60 @@ package validation
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 )
 
-// violation represents some validation rule violation
+// MessageArg represents message placeholder key and its value
+type MessageArg struct {
+	Key   string
+	Value string
+}
+
+// violation represents validation business rule violation
 type violation struct {
-	reason  string
 	message string
+	code    string
+	args    map[string]string
 }
 
 // Violation creates new violation
-func Violation(reason, msg string) violation {
-	return violation{
-		reason:  reason,
-		message: msg,
+func Violation(msg, code string, args ...MessageArg) violation {
+	m := make(map[string]string)
+	for _, a := range args {
+		m[a.Key] = a.Value
 	}
-}
 
-// String implements fmt.Stringer interface
-func (v violation) String() string {
-	return fmt.Sprintf("%s: %s", v.reason, v.message)
+	return violation{
+		message: msg,
+		code:    code,
+		args:    m,
+	}
 }
 
 // MarshalJSON implements json.Marshaler interface
 func (v violation) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&struct {
-		Reason  string `json:"reason"`
-		Message string `json:"message"`
+		Message string            `json:"message"`
+		Code    string            `json:"code"`
+		Args    map[string]string `json:"args"`
 	}{
-		Reason:  v.reason,
 		Message: v.message,
+		Code:    v.code,
+		Args:    v.args,
 	})
+}
+
+// String implements fmt.Stringer interface
+func (v violation) String() string {
+	args := make([]string, len(v.args))
+	for key, val := range v.args {
+		args = append(args, fmt.Sprintf("%s = %s", key, val))
+	}
+
+	var s string
+	if len(args) > 0 {
+		s = fmt.Sprintf(" - args: %s", strings.Join(args, ", "))
+	}
+
+	return fmt.Sprintf("code %s - %s%s", v.code, v.message, s)
 }
