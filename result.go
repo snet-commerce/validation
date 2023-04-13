@@ -15,8 +15,8 @@ func (r *Result) HasError() bool {
 	return len(r.errors) > 0
 }
 
-// Error adds new error
-func (r *Result) Error(err error) *Result {
+// NewError adds new error
+func (r *Result) NewError(err error) *Result {
 	if err != nil {
 		r.errors = append(r.errors, err)
 	}
